@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peta Interaktif</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<body>
+
+<div id="map-container">
+
+ <div id="route-panel">
+
+  <div class="title">Find Route</div>
+
+  <div class="input-box">
+    <span>📍</span>
+    <input id="fromInput" placeholder="Pontianak">
+  </div>
+
+  <div class="input-box">
+    <span>📍</span>
+    <input id="toInput" placeholder="Bali">
+  </div>
+
+  <button id="searchRouteBtn">Search</button>
+
+  <div class="sort">
+    <span>Sort By</span>
+    <div>
+      <button class="active">Fastest</button>
+      <button>Cheapest</button>
+    </div>
+  </div>
+
+  <div id="routeResults"></div>
+
+</div>
+  <!-- PETA -->
+  <div id="map-content">
+
+    <img
+      id="map"
+      src="indonesia.svg"
+      alt="Peta Indonesia"
+    >
+
+    <svg id="line-layer"></svg>
+
+  </div>
+
+ <!-- POPUP -->
+<div id="popup" class="hidden">
+
+  <div class="popup-header">
+
+    <div class="popup-title">
+      Add pinpoint
+    </div>
+
+    <button
+      id="cancelBtn"
+      class="popup-close"
+    >
+      ×
+    </button>
+
+  </div>
+
+  <input
+    type="text"
+    id="locationName"
+    placeholder="Enter location name"
+  >
+
+</div>
+  <!-- CONNECT -->
+  <div id="connectPopup" class="hidden">
+
+    <h4>Koneksi Lokasi</h4>
+
+    <input
+      type="number"
+      id="distanceInput"
+      placeholder="Jarak (km)"
+    />
+
+    <select id="transportSelect">
+      <option value="train">Kereta Api</option>
+      <option value="bus">Bus</option>
+      <option value="plane">Pesawat</option>
+    </select>
+
+    <button id="connectSaveBtn">Sambungkan</button>
+    <button id="connectCancelBtn">Batal</button>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+
+</html>

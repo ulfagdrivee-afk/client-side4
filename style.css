@@ -1,0 +1,437 @@
+/* =========================
+   RESET
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+/* =========================
+   MAP CONTAINER
+========================= */
+#map-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  cursor: grab;
+}
+
+/* =========================
+   MAP CONTENT
+========================= */
+#map-content {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* =========================
+   MAP IMAGE
+========================= */
+#map {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  pointer-events: none;
+  user-select: none;
+}
+
+/* =========================
+   LINE SVG
+========================= */
+#line-layer {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  z-index: 2;
+
+  overflow: visible;
+}
+
+#line-layer line {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#line-layer line:hover {
+  stroke-width: 5;
+}
+
+.line-label {
+  font-size: 12px;
+  font-weight: bold;
+  fill: #111;
+  user-select: none;
+}
+
+/* =========================
+   PIN
+========================= */
+.pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  z-index: 5;
+  user-select: none;
+}
+
+/* PIN ICON */
+.pin-icon {
+  width: 70px;
+  height: 70px;
+
+  background: #ff0000;
+
+  border-radius: 50% 50% 50% 0;
+
+  transform: rotate(-45deg);
+
+  position: relative;
+
+  box-shadow:
+    0 6px 15px rgba(0,0,0,0.25);
+}
+
+/* LUBANG TENGAH */
+.pin-icon::after {
+  content: "";
+
+  position: absolute;
+
+  width: 26px;
+  height: 26px;
+
+  top: 22px;
+  left: 22px;
+
+  border-radius: 50%;
+
+  background: #b7d9ef;
+}
+
+/* LABEL */
+.pin-label {
+  margin-top: 10px;
+
+  min-width: 120px;
+
+  background: white;
+
+  padding: 10px;
+
+  border-radius: 12px;
+
+  text-align: center;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.2);
+}
+
+/* ACTIONS */
+.pin-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  margin-top: 8px;
+}
+
+.action-icon {
+  width: 18px;
+  height: 18px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.action-icon:hover {
+  transform: scale(1.15);
+}
+
+/* =========================
+   POPUP
+========================= */
+#popup {
+  position: fixed;
+
+  width: 260px;
+
+  background: #f5f5f5;
+
+  border: 5px solid black;
+
+  border-radius: 18px;
+
+  padding: 14px;
+
+  z-index: 99999;
+
+  box-shadow:
+    0 8px 20px rgba(0,0,0,0.25);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* HEADER */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* TITLE */
+.popup-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #111;
+}
+
+/* CLOSE BUTTON */
+.popup-close {
+  background: transparent;
+  border: none;
+
+  color: red;
+
+  font-size: 24px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+/* INPUT */
+#locationName {
+  width: 100%;
+
+  padding: 10px 14px;
+
+  border-radius: 14px;
+
+  border: 3px solid #444;
+
+  outline: none;
+
+  font-size: 14px;
+
+  background: white;
+}
+
+#locationName:focus {
+  border-color: #2563eb;
+}
+
+/* =========================
+   CONNECT POPUP
+========================= */
+#connectPopup {
+  position: fixed;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: 280px;
+
+  background: white;
+
+  padding: 18px;
+
+  border-radius: 16px;
+
+  z-index: 99999;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.25);
+}
+
+#connectPopup h4 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+#connectPopup input,
+#connectPopup select {
+  width: 100%;
+
+  margin-top: 10px;
+
+  padding: 10px;
+
+  border-radius: 10px;
+
+  border: 1px solid #ccc;
+
+  outline: none;
+}
+
+#connectPopup button {
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 10px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-weight: bold;
+}
+
+#connectSaveBtn {
+  background: #2563eb;
+  color: white;
+}
+
+#connectCancelBtn {
+  background: #ef4444;
+  color: white;
+}
+
+#route-panel {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 340px;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 999999;
+  background: #fff;
+  border-radius: 28px;
+  padding: 20px;
+  
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  font-family: Arial, sans-serif;
+}
+
+/* TITLE */
+#route-panel .title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 18px;
+}
+
+/* INPUT BOX */
+.input-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: #f2f2f2;
+  padding: 12px 14px;
+  border-radius: 14px;
+
+  margin-bottom: 10px;
+}
+
+.input-box span {
+  font-size: 18px;
+}
+
+.input-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+}
+
+/* SEARCH BUTTON */
+#searchRouteBtn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+
+  background: #8b3dff;
+  color: white;
+
+  font-weight: bold;
+  border-radius: 14px;
+
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+/* SORT */
+.sort {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.sort button {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.sort .active {
+  color: #8b3dff;
+  font-weight: bold;
+}
+
+/* RESULT CARD */
+.route-card {
+  margin-top: 15px;
+  background: #f5f5f5;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.route-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.route-info {
+  font-size: 13px;
+  color: #444;
+}
+
+.route-step {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* =========================
+   UTIL
+========================= */
+.hidden {
+  display: none !important;
+}
