@@ -19,6 +19,7 @@ let popupY = 0;
 let tempX = 0;
 let tempY = 0;
 
+
 let sortMode = "fastest";
 
 const transportData = {
@@ -115,16 +116,7 @@ input.addEventListener("keypress", (e) => {
 cancelBtn.onclick = () => {
   popup.classList.add("hidden");
 };
-/* ======================
-   SAVE PIN
-====================== */
 
-input.addEventListener("keypress", (e) => {
-
-  if (e.key === "Enter") {
-    savePin();
-  }
-});
 
 /* CLOSE */
 cancelBtn.onclick = () => {
@@ -264,31 +256,33 @@ mapContainer.addEventListener("click", (e) => {
   connectPopup.classList.remove("hidden");
 
   connectSaveBtn.onclick = () => {
-    const distance = parseFloat(distanceInput.value) || 0;
-    const type = transportSelect.value;
+
+  const distance = parseFloat(distanceInput.value) || 0;
+  const type = transportSelect.value;
 
   fromPin.connections.push({
-  from: fromPin.id,
-  to: toPin.id,
-  distance,
-  type
-});
+    from: fromPin.id,
+    to: toPin.id,
+    distance,
+    type
+  });
 
-toPin.connections.push({
-  from: toPin.id,
-  to: fromPin.id,
-  distance,
-  type
-});
+  toPin.connections.push({
+    from: toPin.id,
+    to: fromPin.id,
+    distance,
+    type
+  });
 
+  console.log(pins);
 
-    save();
+  save();
 
-    connectPopup.classList.add("hidden");
-    connectFrom = null;
+  connectPopup.classList.add("hidden");
+  connectFrom = null;
 
-    drawLines();
-  };
+  drawLines();
+};
 
   connectCancelBtn.onclick = () => {
     connectPopup.classList.add("hidden");
@@ -373,8 +367,8 @@ const y2 =
 line.setAttribute("x1", x1 + "%");
 line.setAttribute("y1", y1 + "%");
 
-      line.setAttribute("x2", to.x + "%");
-      line.setAttribute("y2", to.y + "%");
+      line.setAttribute("x2", x2 + "%");
+line.setAttribute("y2", y2 + "%");
 
       line.setAttribute("stroke", color);
       line.setAttribute("stroke-width", "4");
@@ -507,50 +501,56 @@ const sortType =
 ========================= */
 
 function findAllRoutes(startId, endId, maxRoutes = 10) {
-  const results = [];
 
-  function dfs(current, visited, path, totalDistance, totalType) {
-    if (results.length >= maxRoutes) return;
+  const routes = [];
 
-    if (current == endId) {
-      results.push({
-        path: [...path],
-        distance: totalDistance
+  function dfs(currentId, visited, path) {
+
+    // kalau sudah cukup
+    if (routes.length >= maxRoutes) return;
+
+    // sampai tujuan
+    if (currentId == endId) {
+
+      routes.push({
+        path: [...path]
       });
+
       return;
     }
 
-    const pin = pins.find(p => p.id == current);
-    if (!pin) return;
+    const currentPin =
+      pins.find(p => p.id == currentId);
 
-    for (let conn of pin.connections || []) {
-      if (visited.includes(conn.to)) continue;
+    if (!currentPin) return;
+
+    for (const conn of currentPin.connections || []) {
+
+      // hindari loop
+      if (visited.includes(conn.to)) {
+        continue;
+      }
 
       visited.push(conn.to);
-     path.push({
-  from: current,
-  to: conn.to,
-  distance: conn.distance,
-  type: conn.type
-});
 
-      dfs(
-        conn.to,
-        visited,
-        path,
-        totalDistance + conn.distance
-      );
+      path.push({
+        from: currentId,
+        to: conn.to,
+        distance: Number(conn.distance),
+        type: conn.type
+      });
 
-      visited.pop();
+      dfs(conn.to, visited, path);
+
       path.pop();
+      visited.pop();
     }
   }
 
-  dfs(startId, [startId], [], 0);
+  dfs(startId, [startId], []);
 
-  return results;
+  return routes;
 }
-
 
 
 
@@ -585,24 +585,54 @@ searchRouteBtn.addEventListener("click", () => {
 
   routeResults.innerHTML = "";
 
-  const fromName = fromInput.value.trim().toLowerCase();
-  const toName = toInput.value.trim().toLowerCase();
+  const fromName =
+    fromInput.value.trim().toLowerCase();
+
+  const toName =
+    toInput.value.trim().toLowerCase();
 
   const fromPin = pins.find(
-  p => p.name.toLowerCase() === fromName
-);
+    p => p.name.toLowerCase() === fromName
+  );
 
-const toPin = pins.find(
-  p => p.name.toLowerCase() === toName
-);
+  const toPin = pins.find(
+    p => p.name.toLowerCase() === toName
+  );
 
+  console.log(fromPin, toPin);
 
-console.log(fromPin, toPin);
+  if (!fromPin || !toPin) {
+    routeResults.innerHTML = `
+      <div class="route-card">
+        Pin tidak ditemukan
+      </div>
+    `;
+    return;
+  }
 
-  if (!fromPin || !toPin) return;
+  // ======================
+  // CARI SEMUA RUTE
+  // ======================
+  const routes =
+    findAllRoutes(fromPin.id, toPin.id, 10);
 
-  const routes = findAllRoutes(fromPin.id, toPin.id, 10);
+  // ======================
+  // TIDAK ADA RUTE
+  // ======================
+  if (routes.length === 0) {
 
+    routeResults.innerHTML = `
+      <div class="route-card">
+        Rute tidak ditemukan
+      </div>
+    `;
+
+    return;
+  }
+
+  // ======================
+  // HITUNG WAKTU + BIAYA
+  // ======================
   const enriched = routes.map(r => {
 
     let totalTime = 0;
@@ -612,15 +642,19 @@ console.log(fromPin, toPin);
 
       const speed =
         step.type === "plane" ? 800 :
-        step.type === "train" ? 120 : 60;
+        step.type === "train" ? 120 :
+        60;
 
-      const cost =
-        step.distance *
-        (step.type === "plane" ? 5 :
-         step.type === "train" ? 2 : 1);
+      const costPerKm =
+        step.type === "plane" ? 12000 :
+        step.type === "train" ? 3000 :
+        1000;
 
-      totalTime += (step.distance / speed) * 60;
-      totalCost += cost;
+      totalTime +=
+        (step.distance / speed) * 60;
+
+      totalCost +=
+        step.distance * costPerKm;
     });
 
     return {
@@ -630,55 +664,79 @@ console.log(fromPin, toPin);
     };
   });
 
-  // SORT DEFAULT = FASTEST
+  // ======================
+  // SORT
+  // ======================
   enriched.sort((a, b) => {
-    return sortMode === "cheapest"
-      ? a.cost - b.cost
-      : a.time - b.time;
+
+    if (sortMode === "cheapest") {
+
+      if (a.cost === b.cost) {
+        return a.time - b.time;
+      }
+
+      return a.cost - b.cost;
+    }
+
+    if (a.time === b.time) {
+      return a.cost - b.cost;
+    }
+
+    return a.time - b.time;
   });
 
+  // ======================
+  // AMBIL 10 TERBAIK
+  // ======================
   const top10 = enriched.slice(0, 10);
 
-  if (top10.length === 0) {
-    routeResults.innerHTML = "Rute tidak ditemukan";
-    return;
-  }
-top10.forEach((r, index) => {
+  // ======================
+  // RENDER
+  // ======================
+  top10.forEach((r, index) => {
 
-  const stepsHTML = r.path.map(step => {
-    const from = pins.find(p => p.id == step.from);
-    const to = pins.find(p => p.id == step.to);
+    const stepsHTML = r.path.map(step => {
 
-    if (!from || !to) return "";
+      const from =
+        pins.find(p => p.id == step.from);
 
-    return `
-      ${from.name} → ${to.name}
-      (${step.type}, ${step.distance} km)
+      const to =
+        pins.find(p => p.id == step.to);
+
+      if (!from || !to) return "";
+
+      return `
+        ${from.name} → ${to.name}
+        (${step.type}, ${step.distance} km)
+      `;
+    }).join("<br>");
+
+    const div =
+      document.createElement("div");
+
+    div.className = "route-card";
+
+    div.innerHTML = `
+      <div class="route-title">
+        Rute ${index + 1}
+      </div>
+
+      <div class="route-info">
+        ⏱ ${(r.time / 60).toFixed(1)} jam
+      </div>
+
+      <div class="route-info">
+        💰 Rp${r.cost.toLocaleString("id-ID")}
+      </div>
+
+      <div class="route-step">
+        ${stepsHTML}
+      </div>
     `;
-  }).join("<br>");
 
-  const div = document.createElement("div");
-  div.className = "route-card";
+    routeResults.appendChild(div);
+  });
 
-  div.innerHTML = `
-    <div class="route-title">
-      Rute ${index + 1}
-    </div>
-
-    <div class="route-info">
-      ⏱ Durasi: ${r.time.toFixed(1)} menit
-    </div>
-
-    <div class="route-info">
-      💰 Biaya: Rp ${r.cost.toFixed(0)}
-    </div>
-
-    <div class="route-step">
-      ${stepsHTML}
-    </div>
-  `;
-
-  routeResults.appendChild(div);
 });
 
 window.addEventListener("keydown", (e) => {
