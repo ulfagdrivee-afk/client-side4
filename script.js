@@ -42,20 +42,23 @@ window.onload = () => {
  popup.classList.add("hidden");
 mapContainer.addEventListener("dblclick", (e) => {
 
-  const rect =
-    mapContainer.getBoundingClientRect();
+  const rect = mapContainer.getBoundingClientRect();
 
-  tempX =
-    ((e.clientX - rect.left) / rect.width) * 100;
+  // posisi mouse relatif terhadap container
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
 
-  tempY =
-    ((e.clientY - rect.top) / rect.height) * 100;
+  // konversi ke koordinat map asli
+  const worldX = (mouseX - translateX) / scale;
+  const worldY = (mouseY - translateY) / scale;
+
+  tempX = (worldX / rect.width) * 100;
+  tempY = (worldY / rect.height) * 100;
 
   popup.classList.remove("hidden");
 
   input.value = "";
 
-  // posisi popup dekat klik
   let popupX = e.clientX + 10;
   let popupY = e.clientY - 20;
 
@@ -63,30 +66,18 @@ mapContainer.addEventListener("dblclick", (e) => {
   const popupHeight = 140;
   const margin = 20;
 
-  // kanan
-  if (
-    popupX + popupWidth >
-    window.innerWidth - margin
-  ) {
-    popupX =
-      window.innerWidth - popupWidth - margin;
+  if (popupX + popupWidth > window.innerWidth - margin) {
+    popupX = window.innerWidth - popupWidth - margin;
   }
 
-  // bawah
-  if (
-    popupY + popupHeight >
-    window.innerHeight - margin
-  ) {
-    popupY =
-      window.innerHeight - popupHeight - margin;
+  if (popupY + popupHeight > window.innerHeight - margin) {
+    popupY = window.innerHeight - popupHeight - margin;
   }
 
-  // kiri
   if (popupX < margin) {
     popupX = margin;
   }
 
-  // atas
   if (popupY < margin) {
     popupY = margin;
   }
@@ -165,27 +156,39 @@ function renderPin(pin) {
 
   div.innerHTML = `
 
-    <div class="pin-icon"></div>
+    <div class="pin-wrapper">
 
-    <div class="pin-label">
+      <!-- BOX ATAS -->
+      <div class="pin-label">
 
-      ${pin.name}
+        <div class="pin-top">
 
-      <div class="pin-actions">
+          <span class="pin-name">
+            ${pin.name}
+          </span>
 
-        <img
-          src="MdiTransitConnectionVariant.svg"
-          class="action-icon"
-          onclick="connectPin(${pin.id})"
-        >
+          <div class="pin-actions">
 
-        <img
-          src="MdiTrashCanOutline.svg"
-          class="action-icon"
-          onclick="deletePin(${pin.id})"
-        >
+            <img
+              src="MdiTransitConnectionVariant.svg"
+              class="action-icon"
+              onclick="connectPin(${pin.id})"
+            >
+
+            <img
+              src="MdiTrashCanOutline.svg"
+              class="action-icon"
+              onclick="deletePin(${pin.id})"
+            >
+
+          </div>
+
+        </div>
 
       </div>
+
+      <!-- GAMBAR PINPOINT -->
+      <div class="pin-icon"></div>
 
     </div>
   `;
