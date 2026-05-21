@@ -13,13 +13,10 @@ const connectCancelBtn = document.getElementById("connectCancelBtn");
 let connectFrom = null;
 let selectedConnection = null;
 
-let popupX = 0;
-let popupY = 0;
-
 let tempX = 0;
 let tempY = 0;
 
-
+// localStorage.clear();
 let sortMode = "fastest";
 
 const transportData = {
@@ -111,13 +108,6 @@ input.addEventListener("keypress", (e) => {
     popup.classList.add("hidden");
   }
 });
-
-/* CLOSE */
-cancelBtn.onclick = () => {
-  popup.classList.add("hidden");
-};
-
-
 /* CLOSE */
 cancelBtn.onclick = () => {
   popup.classList.add("hidden");
@@ -142,14 +132,20 @@ function savePin() {
   popup.classList.add("hidden");
 }
 
-document.querySelectorAll(".sort button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".sort button")
-      .forEach(b => b.classList.remove("active"));
+const sortButtons = document.querySelectorAll(".sort-bar button");
 
+sortButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    sortButtons.forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
 
-    sortMode = btn.textContent.toLowerCase();
+    sortMode = btn.getAttribute("data-sort") || "fastest";
+
+    console.log("SORT MODE CHANGED:", sortMode);
+
+    // 🔥 WAJIB: paksa trigger ulang search
+    searchRouteBtn.click();
   });
 });
 
@@ -376,19 +372,18 @@ line.setAttribute("y2", y2 + "%");
       line.style.cursor = "pointer";
       line.style.pointerEvents = "auto";
 
-      line.addEventListener("click", () => {
+     line.addEventListener("click", () => {
 
-        svg.querySelectorAll("line")
-        .forEach(l => {
-          l.setAttribute("stroke-width", "4");
-        });
+  svg.querySelectorAll("line")
+    .forEach(l => l.setAttribute("stroke-width", "4"));
 
-        line.setAttribute("stroke-width", "7");
+  line.setAttribute("stroke-width", "7");
 
-        selectedConnection = {
-          fromId: from.id,
-          toId: conn.to
-        };
+  selectedConnection = {
+    fromId: from.id,
+    toId: conn.to,
+    type: conn.type
+  };
       });
 
       svg.appendChild(line);
@@ -431,14 +426,9 @@ let scale = 1;
 let translateX = 0;
 let translateY = 0;
 
-// let isDragging = false;
+let isDragging = false;
 let startX = 0;
 let startY = 0;
-
-// function updateTransform() {
-//   content.style.transform =
-//     `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-// }
 // =====================
 // ZOOM (CTRL + SCROLL)
 // =====================
@@ -463,18 +453,22 @@ container.addEventListener("wheel", (e) => {
   translateY = mouseY - worldY * newScale;
 
   scale = newScale;
-
+  clampPan();
   updateTransform();
 }, { passive: false });
 
 function clampPan() {
+
   const rect = container.getBoundingClientRect();
 
-  const maxX = rect.width * (scale - 1);
-  const maxY = rect.height * (scale - 1);
+  const scaledWidth = rect.width * scale;
+  const scaledHeight = rect.height * scale;
 
-  translateX = Math.min(0, Math.max(translateX, -maxX));
-  translateY = Math.min(0, Math.max(translateY, -maxY));
+  const minX = rect.width - scaledWidth;
+  const minY = rect.height - scaledHeight;
+
+  translateX = Math.min(0, Math.max(translateX, minX));
+  translateY = Math.min(0, Math.max(translateY, minY));
 }
 
 function updateTransform() {
@@ -492,9 +486,6 @@ const searchRouteBtn =
 
 const routeResults =
   document.getElementById("routeResults");
-
-const sortType =
-  document.getElementById("sortType");
 
 /* =========================
    VALIDASI INPUT
@@ -531,19 +522,12 @@ function findAllRoutes(startId, endId, maxRoutes = 10) {
         continue;
       }
 
-      visited.push(conn.to);
-
-      path.push({
-        from: currentId,
-        to: conn.to,
-        distance: Number(conn.distance),
-        type: conn.type
-      });
-
-      dfs(conn.to, visited, path);
-
-      path.pop();
-      visited.pop();
+    dfs(conn.to, [...visited, conn.to], [...path, {
+  from: currentId,
+  to: conn.to,
+  distance: Number(conn.distance),
+  type: conn.type
+}]);
     }
   }
 
@@ -640,21 +624,36 @@ searchRouteBtn.addEventListener("click", () => {
 
     r.path.forEach(step => {
 
-      const speed =
-        step.type === "plane" ? 800 :
-        step.type === "train" ? 120 :
-        60;
 
-      const costPerKm =
-        step.type === "plane" ? 12000 :
-        step.type === "train" ? 3000 :
-        1000;
 
-      totalTime +=
-        (step.distance / speed) * 60;
+const transportInfo = {
+  train: {
+    speed: 120,      // km/jam
+    costPerKm: 500,  // Rp/km
+    color: "#33E339"
+  },
 
-      totalCost +=
-        step.distance * costPerKm;
+  bus: {
+    speed: 80,
+    costPerKm: 100,
+    color: "#A83BE8"
+  },
+
+  plane: {
+    speed: 800,
+    costPerKm: 1000,
+    color: "#000000"
+  }
+};
+
+const info = transportInfo[step.type];
+
+// waktu dalam menit
+totalTime += (step.distance / info.speed) * 60;
+
+// biaya
+totalCost += step.distance * info.costPerKm;
+  
     });
 
     return {
@@ -663,28 +662,29 @@ searchRouteBtn.addEventListener("click", () => {
       cost: totalCost
     };
   });
-
+console.log("ENRICHED ROUTES:");
+console.table(enriched.map(r => ({
+  time: r.time,
+  cost: r.cost
+})));
   // ======================
   // SORT
   // ======================
-  enriched.sort((a, b) => {
-
-    if (sortMode === "cheapest") {
-
-      if (a.cost === b.cost) {
-        return a.time - b.time;
-      }
-
-      return a.cost - b.cost;
+enriched.sort((a, b) => {
+  if (sortMode === "cheapest") {
+    if (a.cost === b.cost) {
+      return a.time - b.time;
     }
+    return a.cost - b.cost;
+  }
 
-    if (a.time === b.time) {
-      return a.cost - b.cost;
-    }
+  // FASTEST
+  if (a.time === b.time) {
+    return a.cost - b.cost;
+  }
 
-    return a.time - b.time;
-  });
-
+  return a.time - b.time;
+});
   // ======================
   // AMBIL 10 TERBAIK
   // ======================
@@ -743,35 +743,30 @@ window.addEventListener("keydown", (e) => {
   // =========================
   // DELETE CONNECTION (1 KEYDOWN SAJA)
   // =========================
-  if (e.key === "Delete" || e.key === "Backspace") {
-    if (!selectedConnection) return;
+if (e.key === "Delete" || e.key === "Backspace") {
+  if (!selectedConnection) return;
 
-    const fromPin = pins.find(
-      p => p.id == selectedConnection.fromId
-    );
+  const { fromId, toId, type } = selectedConnection;
 
-    const toPin = pins.find(
-      p => p.id == selectedConnection.toId
-    );
+  const fromPin = pins.find(p => p.id == fromId);
+  const toPin = pins.find(p => p.id == toId);
 
-    if (!fromPin || !toPin) return;
+  if (!fromPin || !toPin) return;
 
-    fromPin.connections =
-      (fromPin.connections || []).filter(
-        conn => conn.to != selectedConnection.toId
-      );
+  // HAPUS HANYA 1 GARIS YANG MATCH SEMUA KRITERIA
+  fromPin.connections = (fromPin.connections || []).filter(conn =>
+    !(conn.to == toId && conn.type == type)
+  );
 
-    toPin.connections =
-      (toPin.connections || []).filter(
-        conn => conn.to != selectedConnection.fromId
-      );
+  toPin.connections = (toPin.connections || []).filter(conn =>
+    !(conn.to == fromId && conn.type == type)
+  );
 
-    selectedConnection = null;
+  selectedConnection = null;
 
-    save();
-    drawLines();
-  }
-
+  save();
+  drawLines();
+}
   // =========================
   // ZOOM KEYBOARD
   // =========================
@@ -799,6 +794,43 @@ window.addEventListener("keydown", (e) => {
   translateY = mouseY - worldY * newScale;
 
   scale = newScale;
-
+  clampPan();
   updateTransform();
+
+  
+});
+
+/* =====================
+   DRAG / PAN MAP
+===================== */
+
+container.addEventListener("mousedown", (e) => {
+
+  // hanya bisa drag kalau zoom > 1
+  if (scale <= 1) return;
+
+  isDragging = true;
+
+  startX = e.clientX - translateX;
+  startY = e.clientY - translateY;
+
+  container.style.cursor = "grabbing";
+});
+
+window.addEventListener("mousemove", (e) => {
+
+  if (!isDragging) return;
+
+  translateX = e.clientX - startX;
+  translateY = e.clientY - startY;
+
+  clampPan();
+  updateTransform();
+});
+
+window.addEventListener("mouseup", () => {
+
+  isDragging = false;
+
+  container.style.cursor = "grab";
 });

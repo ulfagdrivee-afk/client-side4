@@ -9,11 +9,10 @@
 </head>
 <body>
 
-<body>
-
 <div id="map-container">
 
 <div id="route-panel">
+
 
   <div class="route-header">
     <h1>Find Route</h1>
@@ -23,7 +22,7 @@
     <span class="route-icon">📍</span>
     <input
       id="fromInput"
-      placeholder="Pontianak"
+      placeholder="From Pinpoint"
     >
   </div>
 
@@ -31,7 +30,7 @@
     <span class="route-icon">📍</span>
     <input
       id="toInput"
-      placeholder="Bali"
+      placeholder="To Pinpoint"
     >
   </div>
 
@@ -43,16 +42,13 @@
 
     <span>Sort By</span>
 
-    <div class="sort-buttons">
-      <button class="active">
-        Fastest
-      </button>
+   <button class="active" data-sort="fastest">
+  Fastest
+</button>
 
-      <button>
-        Cheapest
-      </button>
-    </div>
-
+<button data-sort="cheapest">
+  Cheapest
+</button>
   </div>
 
   <div id="routeResults"></div>
