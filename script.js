@@ -335,9 +335,9 @@ const length =
   Math.sqrt(dx * dx + dy * dy) || 1;
 
 let offset = 0;
-
+const spacing = 1.50;
 if (conn.type === "train") {
-  offset = -1.2;
+  offset = -spacing;
 }
 
 if (conn.type === "bus") {
@@ -345,7 +345,7 @@ if (conn.type === "bus") {
 }
 
 if (conn.type === "plane") {
-  offset = 1.2;
+  offset = spacing;
 }
 
 const perpX = -dy / length;
@@ -363,11 +363,17 @@ const x2 =
 const y2 =
   to.y + perpY * offset;
 
-line.setAttribute("x1", x1 + "%");
-line.setAttribute("y1", y1 + "%");
+const rect = mapContainer.getBoundingClientRect();
 
-      line.setAttribute("x2", x2 + "%");
-line.setAttribute("y2", y2 + "%");
+const x1px = (x1 / 100) * rect.width;
+const y1px = (y1 / 100) * rect.height;
+const x2px = (x2 / 100) * rect.width;
+const y2px = (y2 / 100) * rect.height;
+
+line.setAttribute("x1", x1px);
+line.setAttribute("y1", y1px);
+line.setAttribute("x2", x2px);
+line.setAttribute("y2", y2px);
 
       line.setAttribute("stroke", color);
       line.setAttribute("stroke-width", "4");
@@ -390,28 +396,66 @@ line.setAttribute("y2", y2 + "%");
       });
 
       svg.appendChild(line);
+const text = document.createElementNS(
+  "http://www.w3.org/2000/svg",
+  "text"
+);
 
-      // TEXT
-      const text = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "text"
-      );
+const mx = (x1px + x2px) / 2;
+const my = (y1px + y2px) / 2;
 
-     const midX = (x1 + x2) / 2;
-const midY = (y1 + y2) / 2;
+const cx = mapContainer.clientWidth / 2;
+const cy = mapContainer.clientHeight / 2;
 
-      text.setAttribute("x", midX + "%");
-      text.setAttribute("y", midY + "%");
+const vx = x2px - x1px;
+const vy = y2px - y1px;
 
-      text.setAttribute("fill", color);
-      text.setAttribute("font-size", "14");
-      text.setAttribute("font-weight", "bold");
+const len = Math.sqrt(vx * vx + vy * vy) || 1;
 
-      text.textContent =
-        `${conn.distance} km`;
+const nx = -vy / len;
+const ny = vx / len;
 
-      svg.appendChild(text);
-    });
+const isForward = from.id < conn.to;
+const dir = isForward ? 1 : -1;
+
+const labelXpx = mx + nx * 12 * dir;
+const labelYpx = my + ny * 12 * dir;
+
+
+// vektor dari center ke midpoint
+const dxCenter = mx - cx;
+const dyCenter = my - cy;
+
+// 👉 arah sisi berdasarkan posisi terhadap garis
+const side = (dxCenter * nx + dyCenter * ny) > 0 ? 1 : -1;
+
+text.setAttribute("x", labelXpx);
+text.setAttribute("y", labelYpx);
+
+const angle = Math.atan2(y2px - y1px, x2px - x1px) || 0;
+
+text.setAttribute(
+  "transform",
+  `rotate(${angle * 180 / Math.PI} ${labelXpx} ${labelYpx})`
+);
+// style
+text.setAttribute("fill", color);
+text.setAttribute("font-weight", "bold");
+text.setAttribute("text-anchor", "middle");
+text.setAttribute("dominant-baseline", "middle");
+
+text.setAttribute("stroke", "white");
+text.setAttribute("stroke-width", "2");
+text.setAttribute("font-size", "10");
+text.setAttribute("paint-order", "stroke");
+
+text.style.pointerEvents = "none";
+text.style.userSelect = "none";
+
+text.textContent = `${conn.distance} km`;
+
+svg.appendChild(text);
+  });
   });
 }
 /* ======================
