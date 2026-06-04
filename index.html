@@ -1,122 +1,67 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Peta Interaktif</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peta Rute Indonesia Fullscreen</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="map-container">
+  <div class="app-container">
+    <div class="sidebar">
+      <h2>Find Route</h2>
+      <div class="input-group">
+        <label for="fromInput">📍 Asal:</label>
+        <input type="text" id="fromInput" placeholder="Contoh: Surabaya">
+      </div>
+      <div class="input-group">
+        <label for="toInput">📍 Tujuan:</label>
+        <input type="text" id="toInput" placeholder="Contoh: Kalimantan">
+      </div>
+      <button id="searchRouteBtn" disabled>Search</button>
 
-<div id="route-panel">
+      <div class="sort-bar">
+        <span>Sort By</span>
+        <button class="active" data-sort="fastest" id="sortFastestBtn">Fastest</button>
+        <button data-sort="cheapest" id="sortCheapestBtn">Cheapest</button>
+      </div>
 
-
-  <div class="route-header">
-    <h1>Find Route</h1>
-  </div>
-
-  <div class="route-input">
-    <span class="route-icon">📍</span>
-    <input
-      id="fromInput"
-      placeholder="From Pinpoint"
-    >
-  </div>
-
-  <div class="route-input">
-    <span class="route-icon">📍</span>
-    <input
-      id="toInput"
-      placeholder="To Pinpoint"
-    >
-  </div>
-
-  <button id="searchRouteBtn" disabled>
-    Search
-  </button>
-
-  <div class="sort-bar">
-
-    <span>Sort By</span>
-
-   <button class="active" data-sort="fastest">
-  Fastest
-</button>
-
-<button data-sort="cheapest">
-  Cheapest
-</button>
-  </div>
-
-  <div id="routeResults"></div>
-
-</div>
-  <!-- PETA -->
-  <div id="map-content">
-
-    <img
-      id="map"
-      src="indonesia.svg"
-      alt="Peta Indonesia"
-    >
-
-    <svg id="line-layer"></svg>
-
-  </div>
-
- <!-- POPUP -->
-<div id="popup" class="hidden">
-
-  <div class="popup-header">
-
-    <div class="popup-title">
-      Add pinpoint
+      <div id="routeResults"></div>
     </div>
 
-    <button
-      id="cancelBtn"
-      class="popup-close"
-    >
-      ×
-    </button>
-
+    <div id="map-container">
+      <div id="map-content">
+        <img src="indonesia.svg" alt="Peta Indonesia" class="map-bg" draggable="false">
+        <svg id="line-layer"></svg>
+      </div>
+    </div>
   </div>
 
-  <input
-    type="text"
-    id="locationName"
-    placeholder="Enter location name"
-  >
-
-</div>
-  <!-- CONNECT -->
-  <div id="connectPopup" class="hidden">
-
-    <h4>Koneksi Lokasi</h4>
-
-    <input
-      type="number"
-      id="distanceInput"
-      placeholder="Jarak (km)"
-    />
-
-    <select id="transportSelect">
-      <option value="train">Kereta Api</option>
-      <option value="bus">Bus</option>
-      <option value="plane">Pesawat</option>
-    </select>
-
-    <button id="connectSaveBtn">Sambungkan</button>
-    <button id="connectCancelBtn">Batal</button>
-
+  <div id="popup" class="modal-popup hidden">
+    <div class="popup-header">
+      <h3>Add pinpoint</h3>
+      <button id="cancelBtn" class="close-x">&times;</button>
+    </div>
+    <input type="text" id="locationName" placeholder="Enter location name">
   </div>
 
-</div>
+  <div id="connectPopup" class="dialog-card hidden">
+    <div class="popup-header">
+      <h3>Connect</h3>
+      <button id="connectCancelBtn" class="close-x">&times;</button>
+    </div>
+    <div class="dialog-body">
+      <input type="number" id="distanceInput" placeholder="Enter distance (km)" min="1">
+      <select id="transportSelect">
+        <option value="train">Kereta (Hijau)</option>
+        <option value="bus">Bus (Ungu)</option>
+        <option value="plane">Pesawat (Hitam)</option>
+      </select>
+      <button id="connectSaveBtn">Submit</button>
+    </div>
+  </div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
-
 </html>

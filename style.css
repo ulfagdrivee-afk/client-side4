@@ -1,423 +1,296 @@
-/* =========================
-   RESET
-========================= */
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-html,
-body {
+
+body, html {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: Arial, sans-serif;
+  background-color: #ffffff;
 }
-/* =========================
-   MAP CONTAINER
-========================= */
-#map-container {
+
+.app-container {
+  display: flex;
   width: 100vw;
   height: 100vh;
+}
+
+/* SIDEBAR LAYOUT */
+.sidebar {
+  width: 320px;
+  background: #f3f4f6;
+  border-right: 2px solid #e5e7eb;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 10;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e1b4b;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: #8b5cf6;
+}
+
+#searchRouteBtn {
+  width: 100%;
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#searchRouteBtn:hover:not(:disabled) {
+  background: #7c3aed;
+}
+
+#searchRouteBtn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 10px;
+}
+
+.sort-bar button {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  outline: none;
+}
+
+.sort-bar button.active {
+  color: #8b5cf6;
+  text-decoration: underline;
+}
+
+#routeResults {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.route-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.route-title {
+  font-weight: bold;
+  color: #1f2937;
+}
+
+/* KANVAS MAP CONTAINER (FULLSCREEN NO BLUE MARGINS) */
+#map-container {
+  flex-grow: 1;
+  height: 100%;
   position: relative;
   overflow: hidden;
-  background: #000;
+  background: #e0f2fe;
   cursor: grab;
 }
-/* =========================
-   MAP CONTENT
-========================= */
+
+#map-container:active {
+  cursor: grabbing;
+}
+
 #map-content {
   position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   transform-origin: 0 0;
-  will-change: transform;
 }
-/* =========================
-   MAP IMAGE
-========================= */
-#map {
-  position: absolute;
-  inset: 0;
+
+.map-bg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  pointer-events: none;
+  object-fit: cover; /* Mengisi penuh kontainer tanpa menyisakan background biru */
   user-select: none;
+  display: block;
 }
-/* =========================
-   LINE SVG
-========================= */
+
 #line-layer {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  pointer-events: auto;
   z-index: 2;
-  overflow: visible;
 }
 
-#line-layer line {
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-#line-layer line:hover {
-  stroke-width: 5;
-}
-
-
-/* =========================
-   PIN
-========================= */
+/* PINPOINT STYLE */
 .pin {
   position: absolute;
   transform: translate(-50%, -100%);
   z-index: 5;
   user-select: none;
 }
+
 .pin-wrapper {
   display: flex;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
-
-/* PIN ICON */
 .pin-icon {
-  width: 35px;
-  height: 35px;
-  background-image: url("MaterialSymbolsLocationOn.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: #ff0000;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: -1px 2px 4px rgba(0,0,0,0.3);
+  position: relative;
 }
 
+.pin-icon::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: white;
+  position: absolute;
+  border-radius: 50%;
+  top: 10px;
+  left: 10px;
+}
 
-/* LABEL */
 .pin-label {
   background: white;
-  padding: 8px 12px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-   margin-bottom: 2px;
-}
-.pin-top {
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 4px 8px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-/* NAMA */
-.pin-name {
-  font-size: 13px;
-  font-weight: bold;
-  color: #111;
-}
-
-
-/* ACTIONS */
-.pin-actions {
-   display: flex;
   align-items: center;
   gap: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
-.action-icon {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  transition: 0.2s;
+.pin-name {
+  font-weight: bold;
+  font-size: 14px;
 }
 
-.action-icon:hover {
-  transform: scale(1.15);
-}
-
-/* =========================
-   POPUP
-========================= */
-#popup {
-  position: fixed;
-  width: 260px;
-  background: #f5f5f5;
-  border: 5px solid black;
-  border-radius: 18px;
-  padding: 14px;
-  z-index: 99999;
-  box-shadow:0 8px 20px rgba(0,0,0,0.25);
+.pin-actions {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 5px;
 }
 
-/* HEADER */
+.action-btn {
+  font-size: 12px;
+  padding: 2px;
+  border-radius: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.connecting-glow .pin-icon {
+  background: #3b82f6 !important;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+  70% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+/* POPUP MODAL DIALOG */
+.modal-popup, .dialog-card {
+  position: fixed;
+  background: white;
+  border: 3px solid #000;
+  border-radius: 12px;
+  padding: 15px;
+  z-index: 100;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  width: 260px;
+}
+
+.hidden {
+  display: none !important;
+}
+
 .popup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-/* TITLE */
-.popup-title {
-  font-size: 16px;
-  font-weight: bold;
-  color: #111;
-}
-
-/* CLOSE BUTTON */
-.popup-close {
-  background: transparent;
-  border: none;
-  color: red;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-/* INPUT */
-#locationName {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 14px;
-  border: 3px solid #444;
-  outline: none;
-  font-size: 14px;
-  background: white;
-}
-
-#locationName:focus {
-  border-color: #2563eb;
-}
-
-/* =========================
-   CONNECT POPUP
-========================= */
-#connectPopup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 280px;
-  background: white;
-  padding: 18px;
-  border-radius: 16px;
-  z-index: 99999;
-  box-shadow:  0 10px 30px rgba(0,0,0,0.25);
-}
-
-#connectPopup h4 {
-  margin-bottom: 12px;
-  font-size: 18px;
-}
-
-#connectPopup input,
-#connectPopup select {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  outline: none;
-}
-
-#connectPopup button {
-  width: 100%;
-  margin-top: 12px;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-#connectSaveBtn {
-  background: #2563eb;
-  color: white;
-}
-
-#connectCancelBtn {
-  background: #ef4444;
-  color: white;
-}
-
-/* =========================
-   ROUTE PANEL
-========================= */
-
-#route-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 250px;
-  height: 100vh;
-  background: #efefef;
-  border-right: 2px solid #222;
-  padding: 18px;
-  z-index: 99999;
-  overflow-y: auto;
-  font-family: Arial, sans-serif;
-}
-
-/* TITLE */
-.route-header h1 {
-  font-size: 28px;
-  font-weight: 900;
-  margin-bottom: 18px;
-  color: #000;
-}
-
-/* INPUT */
-.route-input {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border: 2px solid #666;
-  border-radius: 12px;
-  padding: 8px 12px;
   margin-bottom: 10px;
 }
 
-.route-icon {
-  font-size: 15px;
-}
-
-.route-input input {
-  width: 100%;
+.close-x {
+  background: none;
   border: none;
-  outline: none;
-  background: transparent;
-  font-size: 14px;
-}
-#searchRouteBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* SORT */
-.sort-bar {
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 2px solid #444;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sort-bar span {
-  font-size: 12px;
-  color: #333;
-}
-.sort-buttons button {
-  border: none;
-  background: transparent;
-  font-size: 12px;
-  cursor: pointer;
-  color: #444;
-}
-
-.sort-buttons .active {
-  color: #a335ff;
-  font-weight: bold;
-  text-decoration: underline;
-}
-
-/* RESULTS */
-#routeResults {
-  margin-top: 14px;
-}
-/* STEPS */
-.route-steps {
-  font-size: 11px;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 12px;
-}
-
-/* TITLE */
-#route-panel .title {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 18px;
-}
-.input-box span {
   font-size: 18px;
-}
-.input-box input {
-  border: none;
-  outline: none;
-  background: transparent;
-  width: 100%;
-  font-size: 14px;
+  color: #ef4444;
+  cursor: pointer;
 }
 
-/* SEARCH BUTTON */
-#searchRouteBtn {
+.modal-popup input, .dialog-card input, .dialog-card select {
   width: 100%;
-  padding: 12px;
-  border: none;
-  background: #8b3dff;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 2px solid #000;
+  border-radius: 6px;
+}
+
+.dialog-card button {
+  width: 100%;
+  background: #1e1b4b;
   color: white;
-  font-weight: bold;
-  border-radius: 14px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-/* SORT */
-.sort {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  font-size: 13px;
-}
-
-.sort button {
   border: none;
-  background: transparent;
-  font-size: 13px;
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
-  margin-left: 8px;
-}
-
-.sort .active {
-  color: #8b3dff;
-  font-weight: bold;
-}
-
-/* RESULT CARD */
-.route-card {
-  margin-top: 15px;
-  background: #f5f5f5;
-  border-radius: 16px;
-  padding: 14px;
-}
-
-.route-title {
-  font-weight: bold;
-  margin-bottom: 6px;
-}
-
-.route-info {
-  font-size: 13px;
-  color: #444;
-}
-
-.route-step {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #666;
-}
-
-/* =========================
-   UTIL
-========================= */
-.hidden {
-  display: none !important;
 }
